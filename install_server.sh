@@ -23,6 +23,9 @@ cd /opt/vps_monitor_server/server
 # 替换端口号
 sed -i "s|port=5000|port=${SERVER_PORT}|g" server.py
 
+# 确保日志文件的目录存在
+mkdir -p /opt/vps_monitor_server
+
 # 安装Python依赖
 echo "安装Python依赖..."
 pip3 install flask
@@ -33,4 +36,3 @@ nohup python3 server.py > /opt/vps_monitor_server/server.log 2>&1 &
 
 echo "服务端安装完成！运行在${SERVER_PORT}端口。"
 echo "访问 http://<你的IP>:${SERVER_PORT}/api/status 查看所有VPS状态。"
-
