@@ -10,10 +10,18 @@ fi
 echo "安装必要依赖..."
 apt update -y && apt install -y python3 python3-pip git
 
+# 输入服务端监听的端口
+echo "请输入服务端监听的端口（默认5000）："
+read -r SERVER_PORT
+SERVER_PORT=${SERVER_PORT:-5000}
+
 # 克隆代码仓库
 echo "克隆服务端代码..."
 git clone https://github.com/<你的用户名>/vps-monitor.git /opt/vps_monitor_server
 cd /opt/vps_monitor_server/server
+
+# 替换端口号
+sed -i "s|port=5000|port=${SERVER_PORT}|g" server.py
 
 # 安装Python依赖
 echo "安装Python依赖..."
@@ -23,5 +31,6 @@ pip3 install flask
 echo "启动服务端..."
 nohup python3 server.py > /opt/vps_monitor_server/server.log 2>&1 &
 
-echo "服务端安装完成！运行在5000端口。"
-echo "访问 http://<你的IP>:5000/api/status 查看所有VPS状态。"
+echo "服务端安装完成！运行在${SERVER_PORT}端口。"
+echo "访问 http://<你的IP>:${SERVER_PORT}/api/status 查看所有VPS状态。"
+
