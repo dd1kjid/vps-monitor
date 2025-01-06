@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# 检查是否以root用户运行
+# 检查是否以 root 用户运行
 if [ "$(id -u)" -ne 0 ]; then
-    echo "请以root权限运行此脚本！"
+    echo "请以 root 权限运行此脚本！"
     exit 1
 fi
 
@@ -23,16 +23,17 @@ cd /opt/vps_monitor_server/server
 # 替换端口号
 sed -i "s|port=5000|port=${SERVER_PORT}|g" server.py
 
-# 确保日志目录存在
+# 创建日志目录
+echo "创建日志目录..."
 mkdir -p /opt/vps_monitor_server
 
-# 安装Python依赖
-echo "安装Python依赖..."
+# 安装 Python 依赖
+echo "安装 Python 依赖..."
 pip3 install flask
 
 # 启动服务端
 echo "启动服务端..."
 nohup python3 server.py > /opt/vps_monitor_server/server.log 2>&1 &
 
-echo "服务端安装完成！运行在${SERVER_PORT}端口。"
+echo "服务端安装完成！运行在端口 ${SERVER_PORT}。"
 echo "访问 http://<你的IP>:${SERVER_PORT}/api/status 查看所有VPS状态。"
