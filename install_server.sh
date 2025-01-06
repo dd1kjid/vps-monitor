@@ -1,34 +1,62 @@
 #!/bin/bash
 
-# 检查是否以 root 用户运行
-if [ "$(id -u)" -ne 0 ]; then
-    echo "请以 root 权限运行此脚本！"
+# 服务端和客户端的安装路径
+SERVER_DIR="/opt/vps_monitor_server"
+CLIENT_DIR="/opt/vps_monitor_agent"
+
+# 菜单选项
+echo "请选择操作："
+echo "1) 安装服务端"
+echo "2) 卸载服务端"
+echo "3) 安装客户端"
+echo "4) 卸载客户端"
+echo "0) 退出"
+read -p "请输入选项 [0-4]: " OPTION
+
+case $OPTION in
+1)
+    # 安装服务端
+    echo "开始安装服务端..."
+    apt update -y && apt install -y python3 python3-pip git
+    git clone https://github.com/<你的用户名>/vps-monitor.git $SERVER_DIR
+    cd $SERVER_DIR/server
+    pip3 install flask
+    mkdir -p $SERVER_DIR
+    nohup python3 server.py > $SERVER_DIR/server.log 2>&1 &
+    echo "服务端安装完成！运行在默认端口 5000。"
+    ;;
+2)
+    # 卸载服务端
+    echo "开始卸载服务端..."
+    pkill -f server.py
+    rm -rf $SERVER_DIR
+    echo "服务端卸载完成！"
+    ;;
+3)
+    # 安装客户端
+    echo "开始安装客户端..."
+    apt update -y && apt install -y python3 python3-pip git
+    git clone https://github.com/<你的用户名>/vps-monitor.git $CLIENT_DIR
+    cd $CLIENT_DIR/client
+    pip3 install requests
+    nohup python3 agent.py > $CLIENT_DIR/agent.log 2>&1 &
+    echo "客户端安装完成！"
+    ;;
+4)
+    # 卸载客户端
+    echo "开始卸载客户端..."
+    pkill -f agent.py
+    rm -rf $CLIENT_DIR
+    echo "客户端卸载完成！"
+    ;;
+0)
+    # 退出
+    echo "已退出脚本。"
+    exit 0
+    ;;
+*)
+    # 输入无效
+    echo "无效选项，请重新运行脚本并选择正确的操作。"
     exit 1
-fi
-
-# 安装必要依赖
-echo "安装必要依赖..."
-apt update -y && apt install -y python3 python3-pip git
-
-# 克隆代码仓库
-echo "克隆服务端代码..."
-git clone https://github.com/<你的用户名>/vps-monitor.git /opt/vps_monitor_server
-cd /opt/vps_monitor_server/server
-
-# 替换端口号为6000
-sed -i "s|port=5000|port=6000|g" server.py
-
-# 创建日志目录
-echo "创建日志目录..."
-mkdir -p /opt/vps_monitor_server
-
-# 安装 Python 依赖
-echo "安装 Python 依赖..."
-pip3 install flask
-
-# 启动服务端
-echo "启动服务端..."
-nohup python3 server.py > /opt/vps_monitor_server/server.log 2>&1 &
-
-echo "服务端安装完成！运行在端口 6000。"
-echo "访问 http://<你的IP>:6000 查看探针状态。"
+    ;;
+esac
