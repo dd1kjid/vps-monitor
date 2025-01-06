@@ -5,7 +5,7 @@ SERVER_DIR="/opt/vps_monitor_server"
 CLIENT_DIR="/opt/vps_monitor_client"
 
 # Git 仓库地址（替换为你自己的仓库）
-REPO_URL="https://github.com/<你的用户名>/vps-monitor.git"
+REPO_URL="https://github.com/dd1kjid/vps-monitor.git"
 
 # 默认端口号
 DEFAULT_PORT=6000
