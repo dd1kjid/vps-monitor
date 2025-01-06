@@ -1,42 +1,50 @@
 #!/bin/bash
 
-# 检查是否以root用户运行
-if [ "$(id -u)" -ne 0 ]; then
-    echo "请以root权限运行此脚本！"
-    exit 1
-fi
+# GitHub 仓库地址
+REPO_URL="https://github.com/dd1kjid/vps-monitor.git"  # 替换为你的仓库地址
+
+# 默认路径和端口
+SERVER_DIR="/opt/vps_monitor_server"
+CLIENT_DIR="/opt/vps_monitor_client"
+DEFAULT_PORT=6000
+
+# 颜色设置
+GREEN="\033[32m"
+RED="\033[31m"
+YELLOW="\033[33m"
+NC="\033[0m" # 无颜色
+
+# 分割线
+divider() {
+    echo -e "${GREEN}==========================================${NC}"
+}
+
+# 检查 root 权限
+check_root() {
+    if [ "$(id -u)" -ne 0 ]; then
+        echo -e "${RED}请以 root 权限运行此脚本！${NC}"
+        exit 1
+    fi
+}
 
 # 安装依赖
-echo "安装必要依赖..."
-apt update -y && apt install -y python3 python3-pip python3-venv git iputils-ping
+install_dependencies() {
+    echo -e "${GREEN}安装必要依赖中...${NC}"
+    apt update -y && apt install -y python3 python3-pip git curl
+}
 
-# 输入服务端 IP 和端口
-echo "请输入服务端IP地址（例如：192.168.1.100）："
-read -r SERVER_IP
-echo "请输入服务端监听端口（默认5000）："
-read -r SERVER_PORT
-SERVER_PORT=${SERVER_PORT:-5000}
+# 安装服务端
+install_server() {
+    echo -e "${GREEN}开始安装服务端...${NC}"
+    install_dependencies
+    rm -rf $SERVER_DIR
+    git clone $REPO_URL $SERVER_DIR
+    cd $SERVER_DIR/server || exit
+    pip3 install -r requirements.txt
 
-# 克隆代码仓库
-echo "克隆客户端代码..."
-git clone https://github.com/<你的用户名>/vps-monitor.git /opt/vps_monitor_agent
-cd /opt/vps_monitor_agent/client
+    read -p "请输入服务端运行端口（默认: $DEFAULT_PORT）: " SERVER_PORT
+    SERVER_PORT=${SERVER_PORT:-$DEFAULT_PORT}
 
-# 替换服务端地址
-sed -i "s|SERVER_URL = .*|SERVER_URL = \"http://${SERVER_IP}:${SERVER_PORT}/api/data\"|g" agent.py
-
-# 创建并激活虚拟环境
-echo "创建虚拟环境..."
-python3 -m venv venv
-source venv/bin/activate
-
-# 安装Python依赖
-echo "安装Python依赖..."
-pip install psutil requests
-
-# 启动客户端
-echo "启动探针..."
-nohup ./venv/bin/python3 agent.py > /opt/vps_monitor_agent/agent.log 2>&1 &
-
-echo "探针安装完成！数据将发送到 http://${SERVER_IP}:${SERVER_PORT}/api/data。"
-echo "查看日志：tail -f /opt/vps_monitor_agent/agent.log"
+    nohup python3 server.py --port $SERVER_PORT > $SERVER_DIR/server.log 2>&1 &
+    echo -e "${GREEN}服务端安装完成！运行端口: $SERVER_PORT${NC}"
+    echo -e "${GREEN}访问
