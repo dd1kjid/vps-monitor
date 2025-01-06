@@ -8,7 +8,7 @@ fi
 
 # 安装依赖
 echo "安装必要依赖..."
-apt update -y && apt install -y python3 python3-pip git
+apt update -y && apt install -y python3 python3-pip python3-venv git
 
 # 输入服务端监听的端口
 echo "请输入服务端监听的端口（默认5000）："
@@ -23,16 +23,18 @@ cd /opt/vps_monitor_server/server
 # 替换端口号
 sed -i "s|port=5000|port=${SERVER_PORT}|g" server.py
 
-# 确保日志文件的目录存在
-mkdir -p /opt/vps_monitor_server
+# 创建并激活虚拟环境
+echo "创建虚拟环境..."
+python3 -m venv venv
+source venv/bin/activate
 
 # 安装Python依赖
 echo "安装Python依赖..."
-pip3 install flask
+pip install flask
 
 # 启动服务端
 echo "启动服务端..."
-nohup python3 server.py > /opt/vps_monitor_server/server.log 2>&1 &
+nohup ./venv/bin/python3 server.py > /opt/vps_monitor_server/server.log 2>&1 &
 
 echo "服务端安装完成！运行在${SERVER_PORT}端口。"
 echo "访问 http://<你的IP>:${SERVER_PORT}/api/status 查看所有VPS状态。"
